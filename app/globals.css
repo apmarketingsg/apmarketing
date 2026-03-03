@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg: #050510;
+  --surface: #0d0d1e;
+  --border: rgba(255, 255, 255, 0.07);
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: #f8fafc;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #050510; }
+::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8, #a78bfa, #c4b5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glass morphism */
+.glass {
+  background: rgba(255, 255, 255, 0.025);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Glow utilities */
+.glow-sm { box-shadow: 0 0 20px rgba(99, 102, 241, 0.25); }
+.glow-md { box-shadow: 0 0 40px rgba(99, 102, 241, 0.35); }
+
+/* Grid overlay */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* Prose-like content styles */
+.prose-dark p { @apply text-slate-300 leading-relaxed mb-4; }
+.prose-dark h2 { @apply text-2xl font-bold text-white mt-8 mb-4; }
+.prose-dark h3 { @apply text-xl font-semibold text-white mt-6 mb-3; }
+.prose-dark ul { @apply list-none space-y-2 mb-4; }
+.prose-dark ul li { @apply text-slate-300 pl-4 relative; }
+.prose-dark ul li::before { content: '→'; @apply absolute left-0 text-indigo-400; }
