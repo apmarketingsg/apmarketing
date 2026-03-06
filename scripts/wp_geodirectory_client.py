@@ -25,7 +25,7 @@ from typing import Optional, Any
 # ---------------------------------------------------------------------------
 
 WP_JSON_ROOT = "https://petsgowhere.sg/wp-json"
-BASE_URL = f"{WP_JSON_ROOT}/wp/v2"
+BASE_URL = f"{WP_JSON_ROOT}/geodir/v2"
 WP_USER = "apmarketingsg@gmail.com"
 WP_APP_PASSWORD = "rEWB mRaj u5UP PjBF rhdf B0Pc"
 
@@ -116,7 +116,7 @@ def delete(endpoint: str, params: Optional[dict] = None) -> Any:
 # ---------------------------------------------------------------------------
 
 class GeoDirectoryClient:
-    ENDPOINT = "gd_place"
+    ENDPOINT = "listings"
 
     # ---- READ ---------------------------------------------------------------
 
@@ -207,11 +207,10 @@ def probe_gd_endpoint():
     print("=" * 60)
     print("Probing known GeoDirectory endpoint variants …")
     candidates = [
-        f"{WP_JSON_ROOT}/wp/v2/gd_place",
-        f"{WP_JSON_ROOT}/geodir/v2/places",
-        f"{WP_JSON_ROOT}/geodir/v2/gd_place",
-        f"{WP_JSON_ROOT}/geodirectory/v1/places",
-        f"{WP_JSON_ROOT}/geodirectory/v2/places",
+        f"{WP_JSON_ROOT}/geodir/v2/listings",
+        f"{WP_JSON_ROOT}/geodir/v2/listings/categories",
+        f"{WP_JSON_ROOT}/geodir/v2/listings/tags",
+        f"{WP_JSON_ROOT}/geodir/v2/listings/fields",
     ]
     for url in candidates:
         result = _request_url("GET", url, params={"per_page": 1})
