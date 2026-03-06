@@ -24,7 +24,8 @@ from typing import Optional, Any
 # Configuration
 # ---------------------------------------------------------------------------
 
-BASE_URL = "https://petsgowhere.sg/wp-json/wp/v2"
+WP_JSON_ROOT = "https://petsgowhere.sg/wp-json"
+BASE_URL = f"{WP_JSON_ROOT}/wp/v2"
 WP_USER = "apmarketingsg@gmail.com"
 WP_APP_PASSWORD = "rEWB mRaj u5UP PjBF rhdf B0Pc"
 
@@ -41,6 +42,33 @@ HEADERS = {
 # ---------------------------------------------------------------------------
 # Low-level HTTP helpers
 # ---------------------------------------------------------------------------
+
+def _request_url(method: str, url: str, params: Optional[dict] = None, body: Optional[dict] = None) -> Any:
+    """Make an authenticated request to an absolute URL."""
+    if params:
+        url += "?" + urllib.parse.urlencode(params)
+
+    data = json.dumps(body).encode() if body else None
+    req = urllib.request.Request(url, data=data, headers=HEADERS, method=method)
+
+    try:
+        with urllib.request.urlopen(req) as resp:
+            raw = resp.read().decode()
+            return json.loads(raw) if raw else {}
+    except urllib.error.HTTPError as e:
+        body_text = e.read().decode()
+        print(f"[ERROR] HTTP {e.code} on {method} {url}")
+        try:
+            err = json.loads(body_text)
+            print(f"        code: {err.get('code')}")
+            print(f"        message: {err.get('message')}")
+        except Exception:
+            print(f"        {body_text[:500]}")
+        return None
+    except urllib.error.URLError as e:
+        print(f"[ERROR] Connection failed: {e.reason}")
+        return None
+
 
 def _request(method: str, endpoint: str, params: Optional[dict] = None, body: Optional[dict] = None) -> Any:
     """Make an authenticated request to the WordPress REST API."""
@@ -144,6 +172,56 @@ class GeoDirectoryClient:
 # Exploration / diagnostics
 # ---------------------------------------------------------------------------
 
+def discover_routes():
+    """Fetch the WP REST API root and list all registered namespaces and routes."""
+    print("=" * 60)
+    print("Discovering WP REST API routes …")
+    result = _request_url("GET", WP_JSON_ROOT)
+    if not result:
+        print("  Could not reach WP JSON root.")
+        return
+
+    namespaces = result.get("namespaces", [])
+    print(f"\nRegistered namespaces ({len(namespaces)}):")
+    for ns in namespaces:
+        print(f"  {ns}")
+
+    routes = result.get("routes", {})
+    print(f"\nRoutes containing 'geo' or 'place' or 'listing':")
+    for path in sorted(routes.keys()):
+        lower = path.lower()
+        if any(kw in lower for kw in ("geo", "place", "listing", "directory")):
+            methods = list(routes[path].get("methods", []))
+            print(f"  {path}  [{', '.join(methods)}]")
+
+    print(f"\nAll namespaces containing 'geo' or 'dir':")
+    for ns in namespaces:
+        if any(kw in ns.lower() for kw in ("geo", "dir")):
+            print(f"  → {ns}")
+
+    return namespaces, routes
+
+
+def probe_gd_endpoint():
+    """Try common GeoDirectory REST endpoint variants and report which work."""
+    print("=" * 60)
+    print("Probing known GeoDirectory endpoint variants …")
+    candidates = [
+        f"{WP_JSON_ROOT}/wp/v2/gd_place",
+        f"{WP_JSON_ROOT}/geodir/v2/places",
+        f"{WP_JSON_ROOT}/geodir/v2/gd_place",
+        f"{WP_JSON_ROOT}/geodirectory/v1/places",
+        f"{WP_JSON_ROOT}/geodirectory/v2/places",
+    ]
+    for url in candidates:
+        result = _request_url("GET", url, params={"per_page": 1})
+        if result is not None:
+            count = len(result) if isinstance(result, list) else "?"
+            print(f"  ✓ WORKS → {url}  (returned {count} item(s))")
+        else:
+            print(f"  ✗ failed → {url}")
+
+
 def test_connection():
     """Test the authenticated connection and print user info."""
     print("=" * 60)
@@ -222,8 +300,16 @@ def main():
     cmd  = args[0] if args else "explore"
     client = GeoDirectoryClient()
 
-    if cmd == "explore":
+    if cmd == "routes":
+        discover_routes()
+
+    elif cmd == "probe":
+        probe_gd_endpoint()
+
+    elif cmd == "explore":
         test_connection()
+        discover_routes()
+        probe_gd_endpoint()
         listings = fetch_sample_and_show_structure(n=3)
         if listings:
             print("\n" + "─" * 60)
