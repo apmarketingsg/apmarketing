@@ -6,13 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "crypto:start": "ts-node --project scripts/tsconfig.scripts.json scripts/crypto-scheduler.ts",
+    "crypto:run-now": "RUN_NOW=true ts-node --project scripts/tsconfig.scripts.json scripts/crypto-scheduler.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^7.0.11",
+    "lucide-react": "^0.454.0",
     "next": "14.2.30",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.3",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "lucide-react": "^0.454.0",
+    "ts-node": "^10.9.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {
